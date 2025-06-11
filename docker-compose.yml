@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=process.env.DB_HOST
+      - DB_PORT=process.env.DB_PORT
+      - DB_NAME=process.env.DB_NAME
+      - DB_USER=process.env.DB_USER
+      - DB_PASSWORD=process.env.DB_PASSWORD
+      - REDIS_HOST=process.env.REDIS_HOST
+      - REDIS_PORT=process.env.REDIS_PORT
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: growstack
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  redis_data: 
