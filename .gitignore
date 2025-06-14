@@ -34,6 +34,25 @@ yarn-error.log*
 # Testing
 coverage/
 .nyc_output/
+__tests__/
+test/
+tests/
+*.test.ts
+*.test.js
+*.spec.ts
+*.spec.js
+test-all-endpoints.js
+src/tests/
+jest.config.js
+jest.setup.js
+cypress/
+cypress.config.js
+playwright.config.ts
+playwright-report/
+test-results/
+e2e/
+integration-tests/
+unit-tests/
 
 # Temporary files
 tmp/
@@ -99,4 +118,27 @@ debug.log
 
 # Production build files
 /build
-/dist 
+/dist
+
+# Test coverage and reports
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+cypress/videos/
+cypress/screenshots/
+
+# Local development files
+*.local
+local.*
+local-*
+
+# Generated files
+generated/
+*.generated.*
+*.min.js
+*.min.css
+
+# Documentation build
+docs/_build/
+site/ 
