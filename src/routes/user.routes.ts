@@ -16,7 +16,7 @@ const router = Router();
 router.get('/profile', getProfile);
 
 // Update user profile
-router.patch(
+router.put(
   '/profile',
   [
     body('firstName').optional().isString(),

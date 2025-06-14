@@ -14,6 +14,7 @@ interface RegisterBody {
   phone: string;
   deviceFingerprint: string;
   referralCode?: string;
+  role?: UserRole;
 }
 
 interface LoginBody {
@@ -73,7 +74,7 @@ export const register = async (
       lastName,
       phone,
       deviceFingerprint,
-      role: UserRole.USER,
+      role: (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') && req.body.role ? req.body.role : UserRole.USER,
       onboardingStep: OnboardingStep.EMAIL,
       kycStatus: 'pending',
       isBlocked: false,

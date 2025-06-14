@@ -17,31 +17,22 @@ export const sendUserNotification = async (
   next: NextFunction
 ) => {
   try {
-    const { userId, type, channel, title, content, metadata, scheduledFor } = req.body;
+    const { userId, type, channel, title, content, scheduledFor } = req.body;
 
-    // Validate notification type and channel
-    if (!Object.values(NotificationType).includes(type)) {
-      throw new AppError('Invalid notification type', 400);
-    }
-    if (!Object.values(NotificationChannel).includes(channel)) {
-      throw new AppError('Invalid notification channel', 400);
-    }
-
-    const notification = await createNotification({
+    const notification = await sendNotification(
       userId,
-      type,
-      channel,
+      type as NotificationType,
+      channel as NotificationChannel,
       title,
       content,
-      metadata,
-      scheduledFor: scheduledFor ? new Date(scheduledFor) : undefined,
-    });
+      scheduledFor ? new Date(scheduledFor) : undefined
+    );
 
-    res.status(201).json({
+    res.status(200).json({
       status: 'success',
       data: {
-        notification,
-      },
+        notification
+      }
     });
   } catch (error) {
     next(error);
@@ -54,37 +45,16 @@ export const getNotifications = async (
   next: NextFunction
 ) => {
   try {
-    const userId = req.user?.id;
-    if (!userId) {
-      throw new AppError('User not authenticated', 401);
-    }
-
-    const { page = 1, limit = 10, type, channel, status } = req.query;
-    const offset = (Number(page) - 1) * Number(limit);
-
-    const where: any = { userId };
-    if (type) where.type = type;
-    if (channel) where.channel = channel;
-    if (status) where.status = status;
-
-    const notifications = await Notification.findAndCountAll({
-      where,
-      limit: Number(limit),
-      offset,
-      order: [['createdAt', 'DESC']],
+    const notifications = await Notification.findAll({
+      where: { userId: req.user?.id },
+      order: [['createdAt', 'DESC']]
     });
 
     res.status(200).json({
       status: 'success',
       data: {
-        notifications: notifications.rows,
-        pagination: {
-          total: notifications.count,
-          page: Number(page),
-          limit: Number(limit),
-          pages: Math.ceil(notifications.count / Number(limit)),
-        },
-      },
+        notifications
+      }
     });
   } catch (error) {
     next(error);
@@ -97,18 +67,12 @@ export const markNotificationAsRead = async (
   next: NextFunction
 ) => {
   try {
-    const { notificationId } = req.params;
-    const userId = req.user?.id;
-
-    if (!userId) {
-      throw new AppError('User not authenticated', 401);
-    }
-
+    const { id } = req.params;
     const notification = await Notification.findOne({
       where: {
-        id: notificationId,
-        userId,
-      },
+        id,
+        userId: req.user?.id
+      }
     });
 
     if (!notification) {
@@ -116,29 +80,15 @@ export const markNotificationAsRead = async (
     }
 
     await notification.update({
-      status: NotificationStatus.READ,
-      metadata: {
-        ...notification.metadata,
-        readAt: new Date()
-      }
-    });
-
-    // Track notification read event
-    await createEvent({
-      userId,
-      eventName: 'notification_read',
-      properties: {
-        notificationId: notification.id,
-        type: notification.type,
-        channel: notification.channel,
-      },
+      read: true,
+      status: NotificationStatus.READ
     });
 
     res.status(200).json({
       status: 'success',
       data: {
-        notification,
-      },
+        notification
+      }
     });
   } catch (error) {
     next(error);
@@ -152,11 +102,19 @@ export const sendInactivityNudgeToUser = async (
 ) => {
   try {
     const { userId } = req.params;
-    await sendInactivityNudge(Number(userId));
+    const notification = await sendNotification(
+      parseInt(userId),
+      NotificationType.INACTIVITY,
+      NotificationChannel.EMAIL,
+      'We Miss You!',
+      'Come back and check out our latest features.'
+    );
 
     res.status(200).json({
       status: 'success',
-      message: 'Inactivity nudge sent successfully',
+      data: {
+        notification
+      }
     });
   } catch (error) {
     next(error);
@@ -170,11 +128,19 @@ export const sendKycReminderToUser = async (
 ) => {
   try {
     const { userId } = req.params;
-    await sendKycReminder(Number(userId));
+    const notification = await sendNotification(
+      parseInt(userId),
+      NotificationType.KYC_REMINDER,
+      NotificationChannel.EMAIL,
+      'Complete Your KYC',
+      'Please complete your KYC verification to continue using our services.'
+    );
 
     res.status(200).json({
       status: 'success',
-      message: 'KYC reminder sent successfully',
+      data: {
+        notification
+      }
     });
   } catch (error) {
     next(error);

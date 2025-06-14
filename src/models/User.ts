@@ -162,17 +162,9 @@ User.init(
     },
     indexes: [
       {
-        fields: ['email'],
-      },
-      {
         fields: ['phone'],
-      },
-      {
-        fields: ['status'],
-      },
-      {
-        fields: ['role'],
-      },
+        unique: true
+      }
     ],
   }
 );

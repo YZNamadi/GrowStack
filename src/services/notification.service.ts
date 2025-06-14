@@ -9,6 +9,8 @@ import Notification, {
 } from '../models/Notification';
 import { createEvent } from './event.service';
 import { AppError } from '../middleware/errorHandler';
+import { OnboardingStep } from '../models/User';
+import { sendEmail } from '../config/email';
 
 config();
 
@@ -63,6 +65,7 @@ export const createNotification = async ({
     metadata,
     scheduledFor,
     status: NotificationStatus.PENDING,
+    read: false
   });
 
   // If scheduled for later, store in Redis
@@ -73,75 +76,67 @@ export const createNotification = async ({
     });
   } else {
     // Send immediately
-    await sendNotification(notification);
+    await sendNotificationFromObject(notification);
   }
 
   return notification;
 };
 
-export const sendNotification = async (notification: Notification) => {
+export const sendNotification = async (
+  userId: number,
+  type: NotificationType,
+  channel: NotificationChannel,
+  title: string,
+  content: string,
+  scheduledFor?: Date
+) => {
   try {
-    switch (notification.channel) {
-      case NotificationChannel.EMAIL:
-        await sendEmail(notification);
-        break;
-      case NotificationChannel.SMS:
-        await sendSMS(notification);
-        break;
-      case NotificationChannel.WHATSAPP:
-        await sendWhatsApp(notification);
-        break;
-      default:
-        throw new AppError('Unsupported notification channel', 400);
+    // Get user details
+    const user = await User.findByPk(userId);
+    if (!user) {
+      throw new Error('User not found');
     }
 
-    // Update notification status
-    await notification.update({
+    // Send email if channel is email
+    if (channel === NotificationChannel.EMAIL) {
+      await sendEmail(
+        user.email,
+        title,
+        content,
+        `<h1>${title}</h1><p>${content}</p>`
+      );
+    }
+
+    // Create notification record
+    const notification = await Notification.create({
+      userId,
+      type,
+      channel,
+      title,
+      content,
       status: NotificationStatus.SENT,
-      metadata: {
-        ...notification.metadata,
-        sentAt: new Date(),
-      },
+      scheduledFor,
+      read: false,
+      metadata: {}
     });
 
-    // Track notification sent event
-    await createEvent({
-      userId: notification.userId,
-      eventName: 'notification_sent',
-      properties: {
-        notificationId: notification.id,
-        type: notification.type,
-        channel: notification.channel,
-      },
-    });
+    return notification;
   } catch (error) {
-    // Update notification status to failed
-    await notification.update({
-      status: NotificationStatus.FAILED,
-      metadata: {
-        ...notification.metadata,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        retryCount: (notification.metadata?.retryCount || 0) + 1,
-      },
-    });
-
+    console.error('Error sending notification:', error);
     throw error;
   }
 };
 
-const sendEmail = async (notification: Notification) => {
-  const user = await User.findByPk(notification.userId);
-  if (!user) {
-    throw new AppError('User not found', 404);
-  }
-
-  await emailTransporter.sendMail({
-    from: process.env.SMTP_USER,
-    to: user.email,
-    subject: notification.title,
-    text: notification.content,
-    html: notification.content, // Assuming content is HTML
-  });
+// Helper function to send notification from a notification object
+export const sendNotificationFromObject = async (notification: Notification) => {
+  return sendNotification(
+    notification.userId,
+    notification.type,
+    notification.channel,
+    notification.title,
+    notification.content,
+    notification.scheduledFor || undefined
+  );
 };
 
 const sendSMS = async (notification: Notification) => {
@@ -167,14 +162,12 @@ export const processScheduledNotifications = async () => {
   for (const notificationId of scheduledNotifications) {
     const notification = await Notification.findByPk(parseInt(notificationId));
     if (notification && notification.status === NotificationStatus.PENDING) {
-      await sendNotification(notification);
+      await sendNotificationFromObject(notification);
     }
   }
 
-  // Remove processed notifications from the sorted set
-  if (scheduledNotifications.length > 0) {
-    await redisClient.zRem('scheduled_notifications', ...scheduledNotifications);
-  }
+  // Remove from scheduled notifications
+  await redisClient.zRem('scheduled_notifications', scheduledNotifications as any);
 };
 
 export const sendInactivityNudge = async (userId: number) => {
@@ -205,7 +198,7 @@ export const sendKycReminder = async (userId: number) => {
     throw new AppError('User not found', 404);
   }
 
-  if (user.onboardingStep !== 'KYC_COMPLETE') {
+  if (user.onboardingStep !== OnboardingStep.KYC_COMPLETE) {
     await createNotification({
       userId,
       type: NotificationType.KYC_REMINDER,
@@ -214,4 +207,34 @@ export const sendKycReminder = async (userId: number) => {
       content: `Hi ${user.firstName},<br><br>Don't forget to complete your KYC verification to access all features of our platform.`,
     });
   }
+};
+
+export const sendKycReminderToUser = async (userId: number) => {
+  const notification = await Notification.create({
+    userId,
+    type: NotificationType.KYC_REMINDER,
+    channel: NotificationChannel.EMAIL,
+    title: 'Complete Your KYC',
+    content: 'Please complete your KYC verification to continue using our services.',
+    status: NotificationStatus.PENDING,
+    read: false,
+    metadata: {}
+  });
+
+  return sendNotificationFromObject(notification);
+};
+
+export const sendInactivityNudgeToUser = async (userId: number) => {
+  const notification = await Notification.create({
+    userId,
+    type: NotificationType.INACTIVITY,
+    channel: NotificationChannel.EMAIL,
+    title: 'We Miss You!',
+    content: 'Come back and check out our latest features.',
+    status: NotificationStatus.PENDING,
+    read: false,
+    metadata: {}
+  });
+
+  return sendNotificationFromObject(notification);
 }; 

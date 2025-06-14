@@ -70,6 +70,10 @@ module.exports = {
         type: Sequelize.BOOLEAN,
         defaultValue: false,
       },
+      status: {
+        type: Sequelize.ENUM('active', 'inactive', 'suspended', 'deleted'),
+        defaultValue: 'active',
+      },
       createdAt: {
         type: Sequelize.DATE,
         allowNull: false,

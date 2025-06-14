@@ -7,6 +7,7 @@ import {
   createExperiment,
   getExperimentResults,
 } from '../controllers/experiment.controller';
+import Experiment, { ExperimentStatus } from '../models/Experiment';
 
 const router = Router();
 
@@ -24,6 +25,24 @@ router.post(
   validateRequest,
   createExperiment
 );
+
+// List experiments
+router.get('/', async (req, res) => {
+  try {
+    const experiments = await Experiment.findAll({
+      where: { status: ExperimentStatus.ACTIVE }
+    });
+    res.json({
+      status: 'success',
+      data: { experiments }
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to fetch experiments'
+    });
+  }
+});
 
 // Get experiment results
 router.get('/:id/results', getExperimentResults);

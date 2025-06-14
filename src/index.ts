@@ -30,19 +30,30 @@ app.use(errorHandler);
 // Database connection and server start
 const startServer = async () => {
   try {
+    // Test database connection
     await sequelize.authenticate();
     console.log('Database connection established successfully.');
     
-    await sequelize.sync();
+    // Sync database without forcing
+    await sequelize.sync({ alter: true });
     console.log('Database synchronized successfully.');
 
+    // Start server
     app.listen(port, () => {
       console.log(`Server is running on port ${port}`);
     });
   } catch (error) {
     console.error('Unable to start server:', error);
-    process.exit(1);
+    // Don't exit immediately, give time for cleanup
+    setTimeout(() => {
+      process.exit(1);
+    }, 1000);
   }
 };
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (error) => {
+  console.error('Unhandled promise rejection:', error);
+});
 
 startServer(); 
