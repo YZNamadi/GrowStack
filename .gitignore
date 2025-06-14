@@ -141,4 +141,21 @@ generated/
 
 # Documentation build
 docs/_build/
-site/ 
+site/
+
+# Additional files to ignore
+package-lock.json
+test-endpoints.ps1
+.sequelizerc.js
+monitoring/
+*.md
+!.gitignore
+!README.md
+!API.md
+!CONTRIBUTING.md
+!CHANGELOG.md
+!SECURITY.md
+!DEPLOYMENT.md
+!PERFORMANCE.md
+!SCALING.md
+!BACKUP.md 
