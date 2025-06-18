@@ -12,8 +12,92 @@ import {
 
 const router = Router();
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     UserProfile:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *         email:
+ *           type: string
+ *           format: email
+ *         firstName:
+ *           type: string
+ *         lastName:
+ *           type: string
+ *         phone:
+ *           type: string
+ *         role:
+ *           type: string
+ *           enum: [USER, ADMIN]
+ *         isBlocked:
+ *           type: boolean
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
+ */
+
+/**
+ * @swagger
+ * /api/users/profile:
+ *   get:
+ *     summary: Get current user's profile
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User profile retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/UserProfile'
+ *       401:
+ *         description: Unauthorized
+ */
+
 // Get user profile
 router.get('/profile', getProfile);
+
+/**
+ * @swagger
+ * /api/users/profile:
+ *   put:
+ *     summary: Update current user's profile
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               firstName:
+ *                 type: string
+ *               lastName:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Profile updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/UserProfile'
+ *       400:
+ *         description: Invalid input data
+ *       401:
+ *         description: Unauthorized
+ */
 
 // Update user profile
 router.put(
@@ -27,6 +111,36 @@ router.put(
   updateProfile
 );
 
+/**
+ * @swagger
+ * /api/users/{id}:
+ *   get:
+ *     summary: Get user by ID (admin only)
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: User ID
+ *     responses:
+ *       200:
+ *         description: User retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/UserProfile'
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - Admin access required
+ *       404:
+ *         description: User not found
+ */
+
 // Get user by ID (admin only)
 router.get(
   '/:id',
@@ -35,6 +149,48 @@ router.get(
   validateRequest,
   getUserById
 );
+
+/**
+ * @swagger
+ * /api/users/{id}/block:
+ *   patch:
+ *     summary: Block/Unblock user (admin only)
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: User ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - isBlocked
+ *             properties:
+ *               isBlocked:
+ *                 type: boolean
+ *                 description: Set to true to block user, false to unblock
+ *     responses:
+ *       200:
+ *         description: User block status updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/UserProfile'
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - Admin access required
+ *       404:
+ *         description: User not found
+ */
 
 // Block/Unblock user (admin only)
 router.patch(

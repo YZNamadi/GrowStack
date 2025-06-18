@@ -1,6 +1,7 @@
 import User, { OnboardingStep } from '../models/User';
 import { createEvent } from './event.service';
 import { AppError } from '../middleware/errorHandler';
+import { Op } from 'sequelize';
 
 export const updateOnboardingStep = async (
   userId: number,
@@ -41,7 +42,7 @@ export const getOnboardingStats = async (timeRange?: { startDate: Date; endDate:
   const where: any = {};
   if (timeRange) {
     where.createdAt = {
-      [User.sequelize.Op.between]: [timeRange.startDate, timeRange.endDate],
+      [Op.between]: [timeRange.startDate, timeRange.endDate],
     };
   }
 
