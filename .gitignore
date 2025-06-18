@@ -144,7 +144,7 @@ docs/_build/
 site/
 
 # Additional files to ignore
-package-lock.json
+# package-lock.json
 test-endpoints.ps1
 .sequelizerc.js
 monitoring/
