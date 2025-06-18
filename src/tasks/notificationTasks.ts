@@ -1,6 +1,6 @@
 import { Op } from 'sequelize';
 import User from '../models/User';
-import { processScheduledNotifications, sendInactivityNudge } from '../services/notification.service';
+import { processScheduledNotifications, sendInactivityNudge, sendKycReminder } from '../services/notification.service';
 import { createEvent } from '../services/event.service';
 
 // Process scheduled notifications every minute
