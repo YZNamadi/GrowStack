@@ -14,7 +14,11 @@ const options: swaggerJsdoc.Options = {
     },
     servers: [
       {
-        url: 'http://localhost:3000',
+        url: 'https://growstack.onrender.com/api/v1',
+        description: 'Production server'
+      },
+      {
+        url: 'http://localhost:3000/api/v1',
         description: 'Development server'
       }
     ],

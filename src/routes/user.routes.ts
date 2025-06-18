@@ -45,7 +45,7 @@ const router = Router();
 
 /**
  * @swagger
- * /api/users/profile:
+ * /users/profile:
  *   get:
  *     summary: Get current user's profile
  *     tags: [Users]
@@ -67,7 +67,7 @@ router.get('/profile', getProfile);
 
 /**
  * @swagger
- * /api/users/profile:
+ * /users/profile:
  *   put:
  *     summary: Update current user's profile
  *     tags: [Users]
@@ -113,7 +113,7 @@ router.put(
 
 /**
  * @swagger
- * /api/users/{id}:
+ * /users/{id}:
  *   get:
  *     summary: Get user by ID (admin only)
  *     tags: [Users]
@@ -152,7 +152,7 @@ router.get(
 
 /**
  * @swagger
- * /api/users/{id}/block:
+ * /users/{id}/block:
  *   patch:
  *     summary: Block/Unblock user (admin only)
  *     tags: [Users]

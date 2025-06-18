@@ -43,7 +43,7 @@ const router = Router();
 
 /**
  * @swagger
- * /api/auth/register:
+ * /auth/register:
  *   post:
  *     summary: Register a new user
  *     tags: [Authentication]
@@ -81,7 +81,7 @@ router.post(
 
 /**
  * @swagger
- * /api/auth/login:
+ * /auth/login:
  *   post:
  *     summary: Login user
  *     tags: [Authentication]
@@ -134,7 +134,7 @@ router.post(
 
 /**
  * @swagger
- * /api/auth/refresh-token:
+ * /auth/refresh-token:
  *   post:
  *     summary: Refresh authentication token
  *     tags: [Authentication]

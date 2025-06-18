@@ -16,8 +16,7 @@ config();
 
 // Initialize Redis client
 const redisClient = createClient({
-  url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
-  password: process.env.REDIS_PASSWORD,
+  url: process.env.REDIS_URL,
 });
 
 redisClient.on('error', (err) => console.error('Redis Client Error', err));

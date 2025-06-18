@@ -42,7 +42,7 @@ const router = Router();
 
 /**
  * @swagger
- * /api/referrals/code:
+ * /referrals/code:
  *   get:
  *     summary: Get user's referral code
  *     tags: [Referrals]
@@ -71,7 +71,7 @@ router.get('/code', (req: Request, res: Response) => {
 
 /**
  * @swagger
- * /api/referrals/stats:
+ * /referrals/stats:
  *   get:
  *     summary: Get referral statistics
  *     tags: [Referrals]
@@ -121,7 +121,7 @@ router.get(
 
 /**
  * @swagger
- * /api/referrals/tree:
+ * /referrals/tree:
  *   get:
  *     summary: Get referral tree (admin only)
  *     tags: [Referrals]
@@ -174,7 +174,7 @@ router.get(
 
 /**
  * @swagger
- * /api/referrals/claim-reward:
+ * /referrals/claim-reward:
  *   post:
  *     summary: Claim referral reward
  *     tags: [Referrals]
@@ -199,8 +199,6 @@ router.get(
  *         description: Invalid input data
  *       401:
  *         description: Unauthorized
- *       404:
- *         description: Referral not found
  */
 
 // Claim referral reward
